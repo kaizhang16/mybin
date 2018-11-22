@@ -41,11 +41,6 @@ pub fn md2pdf(input_file: &Path, home_dir: &Path) -> i32 {
                 config_home.to_str().unwrap()
             )
             .as_str(),
-            format!(
-                "--highlight-style={}/pygments.theme",
-                config_home.to_str().unwrap()
-            )
-            .as_str(),
             "--toc",
             "--number-sections",
         ])
