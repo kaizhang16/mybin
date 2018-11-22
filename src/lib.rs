@@ -2,8 +2,8 @@ use std::path::Path;
 use std::process::Command;
 
 pub fn md2pdf(input_file: &Path, home_dir: &Path) -> i32 {
-    let mut output_file = input_file.to_path_buf();
-    output_file.set_extension("pdf");
+    let mut tmp_tex_file = input_file.to_path_buf();
+    tmp_tex_file.set_extension("tex");
 
     let mut config_home = home_dir.to_path_buf();
     config_home.push(".config");
@@ -11,6 +11,8 @@ pub fn md2pdf(input_file: &Path, home_dir: &Path) -> i32 {
 
     let status = Command::new("pandoc")
         .args(&[
+            input_file.to_str().unwrap(),
+            format!("--output={}", tmp_tex_file.to_str().unwrap()).as_str(),
             "--from=markdown",
             "--to=latex",
             "--pdf-engine=xelatex",
@@ -35,15 +37,38 @@ pub fn md2pdf(input_file: &Path, home_dir: &Path) -> i32 {
             .as_str(),
             "--filter=pandoc-citeproc",
             format!(
+                "--filter={}/pandoc-minted.py",
+                config_home.to_str().unwrap()
+            )
+            .as_str(),
+            format!(
                 "--highlight-style={}/pygments.theme",
                 config_home.to_str().unwrap()
             )
             .as_str(),
             "--toc",
-            format!("--output={}", output_file.to_str().unwrap()).as_str(),
-            input_file.to_str().unwrap(),
+            "--number-sections",
         ])
         .status()
         .expect("failed to pandoc");
+    if !status.success() {
+        return status.code().unwrap();
+    }
+
+    let _ = Command::new("latexmk")
+        .args(&[
+            "-xelatex",
+            "-shell-escape",
+            "-interaction=nonstopmode",
+            "-f",
+            tmp_tex_file.to_str().unwrap(),
+        ])
+        .status()
+        .expect("failed to latexmk -xelatex");
+
+    let status = Command::new("latexmk")
+        .arg("-c")
+        .status()
+        .expect("failed to latexmk -c");
     status.code().unwrap()
 }
