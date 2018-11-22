@@ -5,7 +5,7 @@ use std::path::Path;
 use std::process::exit;
 
 fn main() {
-    let app = clap_app!(app =>
+    let app = clap_app!(mybin =>
         (about: "My binaries")
         (author: crate_authors!())
         (version: crate_version!())
