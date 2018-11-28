@@ -13,7 +13,7 @@ pub fn md2pdf(input_file: &Path, home_dir: &Path) -> i32 {
         .args(&[
             input_file.to_str().unwrap(),
             format!("--output={}", tmp_tex_file.to_str().unwrap()).as_str(),
-            "--from=markdown",
+            "--from=markdown+east_asian_line_breaks",
             "--to=latex",
             "--pdf-engine=xelatex",
             format!("--data-dir={}", config_home.to_str().unwrap()).as_str(),
